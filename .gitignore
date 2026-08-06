@@ -1,0 +1,33 @@
+# dependencies
+**/node_modules/
+
+# environment files
+**/.env
+
+# logs
+**/*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# uploads and local files
+**/uploads/
+
+**/test.txt
+
+# package manager lockfiles if you do not want them tracked
+# **/package-lock.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# editor files
+.vscode/
+.idea/
+
+# build output
+**/dist/
+**/build/
+**/coverage/
