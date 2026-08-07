@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const logger = requie("logger");
+const logger = require("../utils/logger");
 
 const postSchema = new mongoose.Schema({
     user:{

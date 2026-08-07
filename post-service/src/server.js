@@ -1,21 +1,22 @@
-require('dotenv').config()
+require("dotenv").config()
 const express=require('express')
-const {connectDB,connectRedis}= require('./database/db')
-const logger = require('./utils/logger')
+const mongoose = require('mongoose');
 const helmet = require('helmet')
 const cors = require('cors');
-const {RateLimiterRedis}=require('rate-limiter-flexible');
+const Redis = require("ioredis")
+const postRoutes = require("./routes/post-routes");
+const errorHandler = require("./middleware/errorHandler");
+const logger = require("./utils/logger");
+const {connectDB,connectRedis} = require("./database/db")
 const {rateLimit}= require('express-rate-limit')
 const{RedisStore}=require('rate-limit-redis')
-const routes = require('./routes/identity-services')
-const errorHandler = require('./middleware/errorHandler')
+
 
 connectDB()
-const redisClient=connectRedis()
+redisClient = connectRedis()
 
-const app = express();
-
-const PORT = process.env.PORT || 3001
+const app=express();
+const PORT = process.env.PORT || 3002
 
 app.use(helmet());
 app.use(cors());
@@ -24,26 +25,6 @@ app.use((req,res,next)=>{
     logger.info(`Recived ${req.method} request to ${req.url}`),
     logger.info(`Request body : ${req.body}`);
     next();
-})
-
-const rateLimiter = new RateLimiterRedis({
-    storeClient : redisClient,
-    keyPrefix : 'middleware',
-    points : 10,
-    duration : 1
-})
-
-app.use((req,res,next)=>{
-    rateLimiter
-    .consume(req.ip)
-    .then(()=>next())
-    .catch(()=>{
-        logger.warn(`Rage limit exceeded for IP : ${req.ip}`)
-        res.status(429).json({
-            success : false,
-            message : 'Too many requests'
-        })
-    })
 })
 
 const sensitiveEndpointsLimiter = rateLimit({
@@ -63,14 +44,18 @@ const sensitiveEndpointsLimiter = rateLimit({
     })
 })
 
-app.use('/api/auth/register',sensitiveEndpointsLimiter)
-
-app.use('/api/auth',routes)
-
+app.use('/api/post',sensitiveEndpointsLimiter,(req,res,next)=>{
+    req.redisClient = redisClient;
+    next()
+},postRoutes)
 app.use(errorHandler)
 
-app.listen(PORT, ()=>{logger.info(`Identity service running on port: ${PORT}`)})
+app.listen(PORT,()=>{
+    logger.info(`post-service running on port: ${PORT}`)
+})
 
 process.on('unhandledRejection',(reason,promise)=>{
     logger.error(`Unhandled rejection at `,promise , 'reason: ',reason)
 })
+
+
