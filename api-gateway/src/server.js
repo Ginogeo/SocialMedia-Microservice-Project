@@ -8,6 +8,7 @@ const {RedisStore}=require('rate-limit-redis')
 const logger = require('./utils/logger')
 const proxy = require("express-http-proxy")
 const errorHandler=require('./middleware/errorHandler')
+const {validateToken} = require("./middleware/authMiddleware")
 
 const app = express();
 const PORT = process.env.PORT || 3001
@@ -78,12 +79,38 @@ app.use('/v1/auth',proxy(process.env.IDENTITY_SERVICE_URL,
     }
 ))
 
+app.use('/v1/post',validateToken,proxy(process.env.POST_SERVICE_URL,
+    {
+        ...proxyOptions,
+        proxyReqOptDecorators : (proxyReqOpts,srcReq)=>{
+            proxyReqOpts.headers["Content-Type"] = "application/json"
+            prosyReqOpts.headers["x-user-id"] = srcReq.user.userId
+            return proxyReqOpts
+        },
+        userResDecorator : (proxyRes,proxyResData,userReq,userRes)=>{
+            logger.info(`Response recived from Post service: ${proxyRes.statusCode}`)
+            try{
+                const body = JSON.parse(proxyResData.toString());
+                if (body.userId){
+                    delete body.userId;
+                }
+                return body;
+            }
+            catch(err){
+                return proxyResData
+            }
+        }
+    }
+))
+
 app.use(errorHandler);
 
 app.listen(PORT, ()=>{
     logger.info(`API Gateway running on port: ${PORT}`)
     logger.info(`Identity Service running on port: ${process.env.IDENTITY_SERVICE_URL}`)
     logger.info(`Redis Service running on port: ${process.env.REDIS_URL}`)
+    logger.info(`Post Service running on port: ${process.env.POST_SERVICE_URL}`)
+
 })
 
 process.on('unhandledRejection',(reason,promise)=>{
