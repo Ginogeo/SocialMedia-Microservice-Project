@@ -11,6 +11,7 @@ const {connectDB,connectRedis} = require("./database/db")
 const {rateLimit}= require('express-rate-limit')
 const{RedisStore}=require('rate-limit-redis')
 
+
 connectDB()
 redisClient = connectRedis()
 
@@ -48,7 +49,10 @@ app.use('/api/media',sensitiveEndpointsLimiter,(req,res,next)=>{
     req.redisClient = redisClient;
     next()
 },mediaRoutes)
+
 app.use(errorHandler)
+
+
 
 app.listen(PORT,()=>{
     logger.info(`media-service running on port: ${PORT}`)

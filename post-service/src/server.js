@@ -10,7 +10,7 @@ const logger = require("./utils/logger");
 const {connectDB,connectRedis} = require("./database/db")
 const {rateLimit}= require('express-rate-limit')
 const{RedisStore}=require('rate-limit-redis')
-
+const {connectRabbitMQ}=require('./utils/rabbitmq')
 
 connectDB()
 redisClient = connectRedis()
@@ -49,6 +49,19 @@ app.use('/api/post',sensitiveEndpointsLimiter,(req,res,next)=>{
     next()
 },postRoutes)
 app.use(errorHandler)
+
+async function startServer(){
+    try{
+        await connectToRabbitMQ();
+        app.listen(PORT,()=>{
+            logger.info(`Identity service running on port ${PORT}`)
+        })
+    }
+    catch(err){
+        logger.error('Failed to connect to server',err)
+        process.exit(1)
+    }
+}
 
 app.listen(PORT,()=>{
     logger.info(`post-service running on port: ${PORT}`)
