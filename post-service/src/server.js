@@ -52,9 +52,9 @@ app.use(errorHandler)
 
 async function startServer(){
     try{
-        await connectToRabbitMQ();
+        await connectRabbitMQ();
         app.listen(PORT,()=>{
-            logger.info(`Identity service running on port ${PORT}`)
+            logger.info(`post-service running on port: ${PORT}`)
         })
     }
     catch(err){
@@ -63,9 +63,7 @@ async function startServer(){
     }
 }
 
-app.listen(PORT,()=>{
-    logger.info(`post-service running on port: ${PORT}`)
-})
+startServer()
 
 process.on('unhandledRejection',(reason,promise)=>{
     logger.error(`Unhandled rejection at `,promise , 'reason: ',reason)

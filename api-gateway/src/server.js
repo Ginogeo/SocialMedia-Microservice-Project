@@ -85,7 +85,7 @@ app.use('/v1/media',validateToken,proxy(process.env.MEDIA_SERVICE_URL,
         proxyReqOptDecorator : (proxyReqOpts,srcReq)=>{
             proxyReqOpts.headers["x-user-id"]=srcReq.user.userId;
             if(!srcReq.headers["content-type"].startsWith("multipart/form-data")){
-                proxyReqOpts.headers["content-type"] = "application/json"
+                proxyReqOpts.headers["Content-Type"] = "application/json"
             }
             
             return proxyReqOpts

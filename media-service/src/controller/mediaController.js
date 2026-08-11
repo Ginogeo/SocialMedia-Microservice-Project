@@ -1,7 +1,6 @@
 const logger = require('../utils/logger');
 const {uploadToCloudinary,deleteFromCloudinary} = require('../utils/cloudinary')
-const Media = require('../models/Media')
-
+const Media = require('../models/Media');
 
 const uploadMedia = async(req,res)=>{
     logger.info('Starting media upload')
@@ -44,4 +43,29 @@ const uploadMedia = async(req,res)=>{
     }
 }
 
-module.exports= {uploadMedia}
+
+const getAllMedia=async(req,res)=>{
+    try{
+        const result = await Media.find({});
+        res.json({result});
+    }
+    catch(err){
+        logger.error("Error fetching media: ",err);
+        res.status(500).json({
+            success:false,
+            message:"Error fetching media"
+        })
+    }
+}
+
+const deleteMedia = async(req,res)=>{
+    try{
+        const media = await Media.findOneAndDelete()
+
+    }
+    catch(err){
+
+    }
+}
+
+module.exports= {uploadMedia,getAllMedia,deleteMedia}
