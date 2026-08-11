@@ -9,7 +9,9 @@ const errorHandler = require("./middleware/errorHandler");
 const logger = require("./utils/logger");
 const {connectDB,connectRedis} = require("./database/db")
 const {rateLimit}= require('express-rate-limit')
-const{RedisStore}=require('rate-limit-redis')
+const{RedisStore}=require('rate-limit-redis');
+const { consumeEvents , connectRabbitMQ} = require("./utils/rabbitmq");
+const { handlePostDeleted } = require("./event-handlers/media-event-handler");
 
 
 connectDB()
@@ -54,9 +56,24 @@ app.use(errorHandler)
 
 
 
-app.listen(PORT,()=>{
-    logger.info(`media-service running on port: ${PORT}`)
-})
+
+async function startServer(){
+    try{
+        await connectRabbitMQ();
+
+        await consumeEvents("post.deleted",handlePostDeleted)
+
+        app.listen(PORT,()=>{
+            logger.info(`media-service running on port: ${PORT}`)
+        })
+    }
+    catch(err){
+        logger.error('Failed to connect to server',err)
+        process.exit(1)
+    }
+}
+
+startServer()
 
 process.on('unhandledRejection',(reason,promise)=>{
     logger.error(`Unhandled rejection at `,promise , 'reason: ',reason)

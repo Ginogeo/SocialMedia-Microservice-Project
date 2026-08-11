@@ -43,7 +43,7 @@ router.post('/upload',authenticateRequest,(req,res,next)=>{
 
 router.get("/get-all-media",authenticateRequest,getAllMedia);
 
-router.delete('/delete-media',authenticateRequest,deleteMedia);
+router.delete('/:id',authenticateRequest,deleteMedia);
 
 
 module.exports=router;

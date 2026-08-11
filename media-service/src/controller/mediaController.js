@@ -60,11 +60,29 @@ const getAllMedia=async(req,res)=>{
 
 const deleteMedia = async(req,res)=>{
     try{
-        const media = await Media.findOneAndDelete()
+
+        const mediaId=req.params.id
+        const media = await Media.findOneAndDelete({
+            _id:mediaId
+        });
+        if(!media){
+            return res.status(404).json({
+                success:false,
+                message:"Post not found"
+            })
+        }
+        res.status(200).json({
+            success:true,
+            message: "media deleted successfully"
+        })
 
     }
     catch(err){
-
+        logger.error("Error deleting media: ",err);
+        res.status(500).json({
+            success:false,
+            message:"Error deleting media"
+        })
     }
 }
 

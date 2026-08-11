@@ -27,8 +27,8 @@ const uploadToCloudinary = (file) => {
 
 const deleteFromCloudinary = async (publicId)=>{
     try{
-        const result = await cloudinary.uploader.destroy(publidId);
-        logger.info("Media deleted successfuly from cloud stroage", publicId);
+        const result = await cloudinary.uploader.destroy(publicId);
+        logger.info(`Media deleted successfuly from cloud stroage: ${publicId}`);
         return result;
     }
     catch(err){

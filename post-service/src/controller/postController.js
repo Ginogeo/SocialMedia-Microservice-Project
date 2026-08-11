@@ -141,7 +141,7 @@ const deletePost = async(req,res)=>{
 
         //publish post deletion event
         await publishEvent('post.deleted',{
-            PostId:post._id.toString(),
+            postId:post._id.toString(),
             userId:req.user.userId,
             mediaIds:post.mediaIds
         }
