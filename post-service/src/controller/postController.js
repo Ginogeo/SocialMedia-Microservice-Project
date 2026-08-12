@@ -156,6 +156,8 @@ const deletePost = async(req,res)=>{
         }
         )
 
+        
+
         invalidatePostCache(req,cacheKey)
         res.status(200).json({
             success:true,

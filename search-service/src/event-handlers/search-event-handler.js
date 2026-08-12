@@ -11,11 +11,21 @@ async function handlePostCreated(event){
         })
 
         await newSearchPost.save()
-        logger.info(`Search post created: ${event.postId}. ${newSearchPost._id.toString()}`)
+        logger.info(`Search post created: ${event.postId}, ${newSearchPost._id.toString()}`)
     }
     catch(err){
         logger.error("Error occured while handling create post event: ",err)
     }
 }
 
-module.exports = {handlePostCreated}
+async function handlePostDeleted(event){
+    try{
+        const deletedSearchPost = await Search.findOneAndDelete({postId: event.postId});
+        logger.info(`Search post deleted: ${event.postId}, ${deletedSearchPost._id.toString()}`)
+    }
+    catch(err){
+        logger.error("Error occured while handling delete post event: ",err)
+    }
+}
+
+module.exports = {handlePostCreated,handlePostDeleted}
