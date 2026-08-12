@@ -15,7 +15,7 @@ const uploadMedia = async(req,res)=>{
         const {originalname,mimetype,buffer}=req.file;
         const userId = req.user.userId;
 
-        logger.info('File details: name= ${originalName}, type= ${mimeType}');
+        logger.info(`File details: name= ${originalname}, type= ${mimetype}`);
          
         const cloudinaryUploadResult = await uploadToCloudinary(req.file);
         logger.info(`Cloudienary upload successfull. Public Id: ${cloudinaryUploadResult.public_id}`);

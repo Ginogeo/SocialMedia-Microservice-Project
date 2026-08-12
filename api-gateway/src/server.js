@@ -11,7 +11,7 @@ const errorHandler=require('./middleware/errorHandler')
 const {validateToken} = require("./middleware/authMiddleware")
 
 const app = express();
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 3000
 const redisClient = new Redis(process.env.REDIS_URL)
 
 app.use(helmet());
@@ -91,7 +91,7 @@ app.use('/v1/media',validateToken,proxy(process.env.MEDIA_SERVICE_URL,
             return proxyReqOpts
         },
         userResDecorator : (proxyRes,proxyResData,userReq,userRes)=>{
-            logger.info(`Response recived from Post service: ${proxyRes.statusCode}`)
+            logger.info(`Response recived from Media service: ${proxyRes.statusCode}`)
             try{
                 const body = JSON.parse(proxyResData.toString());
                 if (body.userId){
@@ -132,6 +132,31 @@ app.use('/v1/post',validateToken,proxy(process.env.POST_SERVICE_URL,
     }
 ))
 
+app.use('/v1/search',validateToken,proxy(process.env.SEARCH_SERVICE_URL,
+    {
+        ...proxyOptions,
+        proxyReqOptDecorator : (proxyReqOpts,srcReq)=>{
+            proxyReqOpts.headers["Content-Type"] = "application/json"
+            proxyReqOpts.headers["x-user-id"] = srcReq.user.userId
+            
+            return proxyReqOpts
+        },
+        userResDecorator : (proxyRes,proxyResData,userReq,userRes)=>{
+            logger.info(`Response recived from Search service: ${proxyRes.statusCode}`)
+            try{
+                const body = JSON.parse(proxyResData.toString());
+                if (body.userId){
+                    delete body.userId;
+                }
+                return body;
+            }
+            catch(err){
+                return proxyResData
+            }
+        }
+    }
+))
+
 app.use(errorHandler);
 
 app.listen(PORT, ()=>{
@@ -140,7 +165,7 @@ app.listen(PORT, ()=>{
     logger.info(`Redis Service running on port: ${process.env.REDIS_URL}`)
     logger.info(`Post Service running on port: ${process.env.POST_SERVICE_URL}`)
     logger.info(`Media Service running on port: ${process.env.MEDIA_SERVICE_URL}`)
-
+    logger.info(`Search Service running on port: ${process.env.SEARCH_SERVICE_URL}`)
 })
 
 process.on('unhandledRejection',(reason,promise)=>{

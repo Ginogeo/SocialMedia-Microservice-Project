@@ -4,25 +4,23 @@ const mongoose = require('mongoose');
 const helmet = require('helmet')
 const cors = require('cors');
 const Redis = require("ioredis")
-const mediaRoutes = require("./routes/media-routes");
+const searchRoutes = require("./routes/searchRoutes");
 const errorHandler = require("./middleware/errorHandler");
 const logger = require("./utils/logger");
 const {connectDB,connectRedis} = require("./database/db")
 const {rateLimit}= require('express-rate-limit')
-const{RedisStore}=require('rate-limit-redis');
-const { consumeEvents , connectRabbitMQ} = require("./utils/rabbitmq");
-const { handlePostDeleted } = require("./event-handlers/media-event-handler");
-
+const{RedisStore}=require('rate-limit-redis')
+const {connectRabbitMQ,consumeEvents}=require('./utils/rabbitmq')
+const {handlePostCreated} =require('./event-handlers/search-event-handler')
 
 connectDB()
 redisClient = connectRedis()
 
 const app=express();
-const PORT = process.env.PORT || 3003
+const PORT = process.env.PORT || 3004
 
-
-app.use(cors());
 app.use(helmet());
+app.use(cors());
 app.use(express.json());
 app.use((req,res,next)=>{
     logger.info(`Recived ${req.method} request to ${req.url}`),
@@ -47,28 +45,25 @@ const sensitiveEndpointsLimiter = rateLimit({
     })
 })
 
-app.use('/api/media',sensitiveEndpointsLimiter,(req,res,next)=>{
+app.use('/api/search',sensitiveEndpointsLimiter,(req,res,next)=>{
     req.redisClient = redisClient;
     next()
-},mediaRoutes)
+},searchRoutes)
 
 app.use(errorHandler)
-
-
-
 
 async function startServer(){
     try{
         await connectRabbitMQ();
-
-        await consumeEvents("post.deleted",handlePostDeleted)
+        
+        await consumeEvents('post.created',handlePostCreated);
 
         app.listen(PORT,()=>{
-            logger.info(`media-service running on port: ${PORT}`)
+            logger.info(`search-service running on port: ${PORT}`)
         })
     }
     catch(err){
-        logger.error('Failed to connect to server',err)
+        logger.error('Failed to connect to server: ',err)
         process.exit(1)
     }
 }
@@ -78,3 +73,5 @@ startServer()
 process.on('unhandledRejection',(reason,promise)=>{
     logger.error(`Unhandled rejection at `,promise , 'reason: ',reason)
 })
+
+
