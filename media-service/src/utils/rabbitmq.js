@@ -7,15 +7,44 @@ let channel = null;
 const EXCHANGE_NAME = 'facebook_events'
 
 async function connectRabbitMQ(){
-    try{
-        connection = await amqp.connect(process.env.RABBITMQ_URL)
-        channel = await connection.createChannel();
-        await channel.assertExchange(EXCHANGE_NAME,"topic",{durable:false});
-        logger.info("Connected to rabbit mq");
-        return channel;
+    while (!connection || !channel) {
+        try {
+            if (!connection) {
+                logger.info("Attempting to connect to RabbitMQ...");
+                connection = await amqp.connect(process.env.RABBITMQ_URL);
+                
+                // Optional: Handle connection drops after a successful connect
+                connection.on('error', (err) => logger.error('RabbitMQ connection error', err));
+                connection.on('close', () => logger.warn('RabbitMQ connection closed'));
+            }
+
+            if (!channel) {
+                logger.info("Creating RabbitMQ channel...");
+                channel = await connection.createChannel();
+            }
+            
+        } catch (error) {
+            logger.error("RabbitMQ setup failed. Retrying in 10 seconds...", error);
+            
+            // Clean up connection state if channel creation failed
+            if (connection && !channel) {
+                try { await connection.close(); } catch (_) {}
+                connection = null;
+            }
+            
+            // Wait 10 seconds before trying again
+            await new Promise(resolve => setTimeout(resolve, 10000));
+        }
     }
-    catch(err){
-        logger.error('Error connecting to RabbitMQ:',err)
+
+    try {
+        // 3. Configure topology once connection and channel are solid
+        await channel.assertExchange(EXCHANGE_NAME, "topic", { durable: false });
+        logger.info("Successfully connected to RabbitMQ and asserted exchange");
+        return channel;
+    } catch (topologyError) {
+        logger.error("Failed to assert exchange topology:", topologyError);
+        throw topologyError; 
     }
 }
 
