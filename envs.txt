@@ -1,0 +1,49 @@
+api - gateway
+
+PORT = 3000
+NODE_ENV = development
+IDENTITY_SERVICE_URL = http://identity-service:3001
+POST_SERVICE_URL = http://post-service:3002
+MEDIA_SERVICE_URL = http://media-service:3003
+SEARCH_SERVICE_URL = http://search-service:3004
+REDIS_URL = redis://redis:6379
+JWT_SECRET=shaji_papan
+
+identity-service
+
+PORT = 3001
+MONGODB_URI = mongodb+srv://ginogeo351_db_user:y1mBaMS339bPiZJ9@cluster0.utb1fhu.mongodb.net/
+JWT_SECRET=shaji_papan
+NODE-ENV=development
+REDIS_URL = redis://redis:6379
+
+media-service
+
+PORT = 3003
+MONGODB_URI = mongodb+srv://ginogeo351_db_user:y1mBaMS339bPiZJ9@cluster0.utb1fhu.mongodb.net/
+JWT_SECRET=shaji_papan
+NODE-ENV=development
+REDIS_URL = redis://redis:6379
+CLOUDINARY_API_KEY = 954737959975339
+CLOUDINARY_API_SECRET = W6uTxuQ4EJvpvbx-0xjeRgY_rZI
+CLOUDINARY_CLOUD_NAME=dorafq1w4
+CLOUDINARY_URL=cloudinary://954737959975339:W6uTxuQ4EJvpvbx-0xjeRgY_rZI@dorafq1w4
+RABBITMQ_URL=amqp://rabbitmq:5672
+
+post-service
+
+PORT = 3002
+MONGODB_URI = mongodb+srv://ginogeo351_db_user:y1mBaMS339bPiZJ9@cluster0.utb1fhu.mongodb.net/
+JWT_SECRET=shaji_papan
+NODE-ENV=development
+REDIS_URL = redis://redis:6379
+RABBITMQ_URL=amqp://rabbitmq:5672
+
+search-service
+
+PORT = 3004
+MONGODB_URI = mongodb+srv://ginogeo351_db_user:y1mBaMS339bPiZJ9@cluster0.utb1fhu.mongodb.net/
+JWT_SECRET=shaji_papan
+NODE-ENV=development
+REDIS_URL = redis://redis:6379
+RABBITMQ_URL=amqp://rabbitmq:5672

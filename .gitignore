@@ -3,7 +3,7 @@
 
 # environment files
 **/.env
-
+**/.envs.txt
 # logs
 **/*.log
 npm-debug.log*

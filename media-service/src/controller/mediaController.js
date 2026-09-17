@@ -46,7 +46,17 @@ const uploadMedia = async(req,res)=>{
 
 const getAllMedia=async(req,res)=>{
     try{
+        const cacheKey = 'media:all';
+        const cachedResult = await req.redisClient.get(cacheKey);
+        
+        if(cachedResult){
+            logger.info('Returning media from Redis cache');
+            return res.json(JSON.parse(cachedResult));
+        }
+        
         const result = await Media.find({});
+        await req.redisClient.setex(cacheKey,300,JSON.stringify(result))
+        logger.info('Fetched media from database and cached it');
         res.json({result});
     }
     catch(err){
